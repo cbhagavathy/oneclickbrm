@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Register · OneClick BRM</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f0f6f7;
+      --surface: #ffffff;
+      --accent: #3a7582;
+      --accent-mid: #4d92a3;
+      --accent-soft: #e6f2f4;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --danger: #b91c1c;
+      --radius: 16px;
+      font-family: "DM Sans", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text); display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; }
+    .shell { width: 100%; max-width: 440px; }
+    .brand { display: flex; align-items: center; gap: 0.65rem; margin-bottom: 1.5rem; justify-content: center; }
+    .brand-mark { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(145deg, var(--accent-mid), var(--accent)); }
+    .brand-text { font-weight: 700; font-size: 1.1rem; }
+    .card {
+      background: var(--surface); border-radius: var(--radius); padding: 1.75rem; border: 1px solid var(--border);
+      box-shadow: 0 10px 40px -12px rgba(58, 117, 130, 0.12);
+    }
+    h1 { margin: 0 0 0.35rem; font-size: 1.35rem; font-weight: 700; text-align: center; }
+    .sub { margin: 0 0 1.5rem; color: var(--muted); font-size: 0.9rem; text-align: center; line-height: 1.45; }
+    label { display: block; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin-bottom: 0.35rem; }
+    input, select {
+      width: 100%; padding: 0.65rem 0.85rem; border: 1px solid var(--border); border-radius: 10px; font-size: 0.95rem; margin-bottom: 1rem; background: #f8fafc;
+    }
+    input:focus, select:focus { outline: none; border-color: var(--accent-mid); background: #fff; }
+    .btn {
+      width: 100%; padding: 0.7rem 1rem; border: none; border-radius: 999px; font-weight: 600; font-size: 0.95rem;
+      background: var(--accent); color: #fff; cursor: pointer; margin-top: 0.25rem;
+      box-shadow: 0 4px 14px rgba(58, 117, 130, 0.3);
+    }
+    .btn:hover { filter: brightness(1.05); }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    #msg { margin-top: 1rem; font-size: 0.88rem; min-height: 1.25rem; text-align: center; }
+    #msg.ok { color: var(--accent); font-weight: 600; }
+    #msg.err { color: var(--danger); }
+    #client-id-box { display: none; margin-top: 1rem; padding: 0.85rem; border-radius: 12px; background: var(--accent-soft); border: 1px solid var(--border); text-align: left; }
+    #client-id-box.visible { display: block; }
+    #client-id-box code { display: block; font-size: 0.8rem; word-break: break-all; margin: 0.5rem 0; padding: 0.5rem; background: #fff; border-radius: 8px; border: 1px solid var(--border); }
+    #client-id-box .copy-btn { width: auto; padding: 0.45rem 0.9rem; font-size: 0.85rem; margin-top: 0.25rem; }
+    .back { text-align: center; margin-top: 1.25rem; }
+    .back a { color: var(--accent-mid); font-weight: 600; text-decoration: none; }
+    .back a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"></div>
+      <span class="brand-text">OneClick BRM</span>
+    </div>
+    <div class="card">
+      <h1>Create account</h1>
+      <p class="sub">Register with your email. Passwords are stored using Argon2 hashing.</p>
+      <form id="f" autocomplete="on">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required maxlength="254" placeholder="you@example.com" />
+
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" required maxlength="200" placeholder="Full name" />
+
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required minlength="8" maxlength="128" placeholder="At least 8 characters" />
+
+        <label for="country">Country</label>
+        <input type="text" id="country" name="country" required maxlength="100" placeholder="e.g. United States" list="countries" />
+        <datalist id="countries">
+          <option value="United States"></option>
+          <option value="United Kingdom"></option>
+          <option value="India"></option>
+          <option value="Canada"></option>
+          <option value="Australia"></option>
+          <option value="Germany"></option>
+          <option value="France"></option>
+          <option value="Japan"></option>
+          <option value="Singapore"></option>
+        </datalist>
+
+        <button type="submit" class="btn" id="submit">Register</button>
+      </form>
+      <p id="msg"></p>
+      <div id="client-id-box" aria-live="polite">
+        <strong style="font-size:0.85rem">Your Client ID</strong>
+        <p style="margin:0.35rem 0 0;font-size:0.82rem;color:var(--muted);line-height:1.4">Use this in the heartbeat client (<code>--client-id</code> or <code>CLIENT_ID</code>).</p>
+        <code id="client-id-value"></code>
+        <button type="button" class="btn copy-btn" id="copy-client-id">Copy Client ID</button>
+      </div>
+    </div>
+    <p class="back"><a href="/">← Back to dashboard</a></p>
+  </div>
+  <script>
+    document.getElementById('f').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const msg = document.getElementById('msg');
+      const btn = document.getElementById('submit');
+      msg.textContent = '';
+      msg.className = '';
+      btn.disabled = true;
+      try {
+        const body = {
+          email: document.getElementById('email').value,
+          name: document.getElementById('name').value,
+          password: document.getElementById('password').value,
+          country: document.getElementById('country').value,
+        };
+        const r = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const d = await r.json().catch(function () { return {}; });
+        msg.textContent = d.message || (r.ok ? 'Done.' : 'Request failed');
+        msg.className = r.ok && d.ok ? 'ok' : 'err';
+        var box = document.getElementById('client-id-box');
+        var cidVal = document.getElementById('client-id-value');
+        if (r.ok && d.ok && d.client_id) {
+          box.classList.add('visible');
+          cidVal.textContent = d.client_id;
+        } else {
+          box.classList.remove('visible');
+          cidVal.textContent = '';
+        }
+        if (r.ok && d.ok) {
+          document.getElementById('f').reset();
+        }
+      } catch (err) {
+        msg.textContent = String(err);
+        msg.className = 'err';
+      }
+      btn.disabled = false;
+    });
+    document.getElementById('copy-client-id').addEventListener('click', function () {
+      var t = document.getElementById('client-id-value').textContent;
+      if (!t) return;
+      navigator.clipboard.writeText(t).catch(function () {});
+    });
+  </script>
+</body>
+</html>

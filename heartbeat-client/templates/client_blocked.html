@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Heartbeat failed · OneClick BRM</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f0f6f7;
+      --surface: #fff;
+      --accent: #3a7582;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --danger: #b91c1c;
+      font-family: "DM Sans", system-ui, sans-serif;
+    }
+    body {
+      margin: 0; min-height: 100vh; background: var(--bg); color: #0f172a;
+      display: flex; align-items: center; justify-content: center; padding: 2rem 1rem;
+    }
+    .card {
+      max-width: 480px; width: 100%; background: var(--surface); border-radius: 16px;
+      padding: 2rem; border: 1px solid var(--border); box-shadow: 0 10px 40px -12px rgba(58, 117, 130, 0.12);
+      text-align: center;
+    }
+    .mark { width: 48px; height: 48px; margin: 0 auto 1rem; border-radius: 14px; background: linear-gradient(145deg, #4d92a3, #3a7582); }
+    h1 { font-size: 1.25rem; color: var(--danger); margin: 0 0 0.5rem; font-weight: 700; }
+    pre {
+      text-align: left; background: #f8fafc; border: 1px solid var(--border); border-radius: 12px;
+      padding: 1rem; font-size: 0.8rem; overflow: auto; color: var(--muted); margin: 1rem 0;
+    }
+    p.muted { color: var(--muted); font-size: 0.9rem; line-height: 1.5; margin: 0; }
+    .btn-out {
+      margin-top: 1rem; padding: 0.55rem 1.2rem; border-radius: 999px; border: 1px solid var(--border);
+      background: #fff; color: var(--accent); font-weight: 600; font-size: 0.9rem; cursor: pointer;
+    }
+    .btn-out:hover { border-color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="mark" aria-hidden="true"></div>
+    <h1>Heartbeat failed</h1>
+    <p class="muted">The app stays locked until the server acknowledges your heartbeat.</p>
+    <pre id="detail">__DETAIL__</pre>
+    <p class="muted">This page will reload when the heartbeat succeeds.</p>
+    <button type="button" class="btn-out" id="btn-signout-blocked">Sign out and return to login</button>
+  </div>
+  <script>
+    document.getElementById('btn-signout-blocked').addEventListener('click', async function () {
+      try {
+        await fetch('/api/logout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+      } catch (e) {}
+      location.replace('/');
+    });
+    (async function () {
+      try {
+        const r = await fetch('/api/status');
+        const d = await r.json();
+        if (d.dashboard_access && d.gate === 'unlocked') location.reload();
+      } catch (e) {}
+      setInterval(() => location.reload(), 8000);
+    })();
+  </script>
+</body>
+</html>

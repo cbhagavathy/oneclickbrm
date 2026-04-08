@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Client · OneClick BRM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f0f6f7;
+      --surface: #ffffff;
+      --sidebar: #fafcfc;
+      --accent: #3a7582;
+      --accent-mid: #4d92a3;
+      --accent-soft: #e6f2f4;
+      --accent-dark: #264a52;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --danger: #b91c1c;
+      --radius: 16px;
+      --radius-sm: 12px;
+      --shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+      --shadow-lg: 0 10px 40px -10px rgba(58, 117, 130, 0.12);
+      font-family: "DM Sans", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); min-height: 100vh; }
+    .app { display: flex; min-height: 100vh; }
+    .sidebar {
+      width: 248px; flex-shrink: 0; background: var(--sidebar);
+      border-right: 1px solid var(--border); padding: 1.25rem 1rem;
+      display: flex; flex-direction: column;
+    }
+    .brand { display: flex; align-items: center; gap: 0.65rem; margin-bottom: 1.75rem; padding: 0 0.35rem; }
+    .brand-mark {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: linear-gradient(145deg, var(--accent-mid), var(--accent));
+      box-shadow: var(--shadow-lg);
+    }
+    .brand-text { font-weight: 700; font-size: 1.05rem; letter-spacing: -0.02em; }
+    .nav-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 1rem 0.5rem 0.5rem; }
+    .nav-item {
+      display: flex; align-items: center; gap: 0.6rem; padding: 0.65rem 0.75rem; border-radius: var(--radius-sm);
+      color: var(--muted); font-size: 0.9rem; font-weight: 500; border: none; background: none; width: 100%; cursor: pointer; text-align: left;
+    }
+    .nav-item:hover { background: #fff; color: var(--text); }
+    .nav-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+    .nav-item svg { width: 20px; height: 20px; }
+    .sidebar-promo {
+      margin-top: auto; padding: 1rem; background: linear-gradient(160deg, var(--accent-mid), #2d616d);
+      border-radius: var(--radius); color: #fff; font-size: 0.85rem;
+    }
+    .sidebar-promo strong { display: block; margin-bottom: 0.35rem; }
+    .sidebar-promo a { color: #fff; font-weight: 600; }
+    .main-area { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      padding: 1rem 1.75rem; background: var(--surface); border-bottom: 1px solid var(--border);
+    }
+    .search-wrap { flex: 1; max-width: 420px; }
+    .search-wrap input {
+      width: 100%; padding: 0.65rem 1rem; border: 1px solid var(--border); border-radius: 999px;
+      background: var(--bg); font-size: 0.9rem; outline: none;
+    }
+    .topbar-right { display: flex; align-items: center; gap: 1rem; }
+    .icon-btn { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); cursor: pointer; display: grid; place-items: center; }
+    .user-pill { display: flex; align-items: center; gap: 0.65rem; padding: 0.35rem 0.5rem 0.35rem 0.35rem; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: 0.85rem; display: grid; place-items: center; }
+    .user-meta .name { font-size: 0.85rem; font-weight: 600; }
+    .user-meta .email { font-size: 0.7rem; color: var(--muted); }
+    .content { padding: 1.5rem 1.75rem 2.5rem; flex: 1; }
+    .page-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
+    .page-head h1 { margin: 0; font-size: 1.5rem; font-weight: 700; letter-spacing: -0.03em; }
+    .page-head .sub { margin: 0.35rem 0 0; color: var(--muted); font-size: 0.95rem; max-width: 540px; }
+    .btn {
+      display: inline-flex; align-items: center; padding: 0.55rem 1.1rem; border-radius: 999px; font-weight: 600; font-size: 0.875rem;
+      border: none; cursor: pointer; text-decoration: none; transition: transform 0.12s ease;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 4px 14px rgba(58, 117, 130, 0.3); }
+    .btn-outline { background: #fff; color: var(--text); border: 1px solid var(--border); }
+    .metrics-grid {
+      display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; margin-bottom: 1.25rem;
+    }
+    @media (max-width: 1000px) { .metrics-grid { grid-template-columns: repeat(2, 1fr); } .sidebar { display: none; } }
+    @media (max-width: 520px) { .metrics-grid { grid-template-columns: 1fr; } }
+    .metric-card {
+      background: var(--surface); border-radius: var(--radius); padding: 1.15rem 1.25rem; border: 1px solid var(--border); box-shadow: var(--shadow);
+    }
+    .metric-card.featured {
+      background: linear-gradient(135deg, var(--accent) 0%, #2d616d 100%); color: #fff; border: none;
+    }
+    .metric-card.featured .metric-label { color: rgba(255,255,255,0.85); }
+    .metric-card.featured .metric-value { color: #fff; }
+    .metric-label { font-size: 0.8rem; color: var(--muted); font-weight: 500; }
+    .metric-value { font-size: 1.5rem; font-weight: 700; margin-top: 0.25rem; word-break: break-all; }
+    .metric-hint { font-size: 0.75rem; color: var(--muted); margin-top: 0.35rem; }
+    .metric-card.featured .metric-hint { color: rgba(255,255,255,0.75); }
+    .card {
+      background: var(--surface); border-radius: var(--radius); padding: 1.25rem; border: 1px solid var(--border); box-shadow: var(--shadow); margin-bottom: 1rem;
+    }
+    .card h2 { margin: 0 0 1rem; font-size: 1rem; font-weight: 600; }
+    h3 { margin: 1rem 0 0.5rem; font-size: 0.9rem; color: var(--muted); font-weight: 600; }
+    .row { display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.9rem; }
+    .label { color: var(--muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+    pre {
+      background: #f8fafc; padding: 1rem; border-radius: var(--radius-sm); overflow: auto; font-size: 0.8rem; margin: 0.5rem 0 0;
+      border: 1px solid var(--border);
+    }
+    .ok { color: var(--accent-mid); font-weight: 600; }
+    .bad { color: var(--danger); }
+    table.data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .data-table th { text-align: left; padding: 0.6rem 0.5rem; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--border); }
+    .data-table td { padding: 0.65rem 0.5rem; border-bottom: 1px solid var(--border); }
+    a.link { color: var(--accent-mid); font-weight: 600; }
+    .muted { color: var(--muted); font-size: 0.9rem; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    textarea.util-in {
+      width: 100%; min-height: 120px; box-sizing: border-box;
+      background: #f8fafc; color: var(--text); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 0.75rem; font-family: ui-monospace, monospace; font-size: 0.8rem; resize: vertical;
+    }
+    input.url-in {
+      flex: 1; min-width: 200px;
+      background: #f8fafc; color: var(--text); border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 0.55rem 0.75rem; font-size: 0.85rem;
+    }
+    .util-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
+    .btn-util { background: var(--accent); color: #fff; border: none; border-radius: 10px; padding: 0.5rem 1rem; font-weight: 600; cursor: pointer; font-size: 0.85rem; }
+    .btn-util.secondary { background: #e2e8f0; color: var(--text); }
+    .iframe-wrap {
+      margin-top: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden;
+      min-height: 280px; background: #f1f5f9;
+    }
+    .iframe-wrap iframe { width: 100%; height: 360px; border: 0; display: block; }
+    .hint { font-size: 0.8rem; color: var(--muted); margin-top: 0.5rem; line-height: 1.4; }
+    code { font-family: ui-monospace, monospace; font-size: 0.8rem; background: var(--bg); padding: 0.15rem 0.4rem; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <span class="brand-text">OneClick BRM</span>
+      </div>
+      <div class="nav-label">Menu</div>
+      <button type="button" class="nav-item active" data-panel="overview" role="tab" aria-selected="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Overview
+      </button>
+      <button type="button" class="nav-item" data-panel="utilities" role="tab" aria-selected="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Utilities
+      </button>
+      <div class="nav-label">Links</div>
+      <a class="nav-item" id="server-link" href="#" target="_blank" rel="noopener" style="text-decoration:none;color:inherit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>Server dashboard
+      </a>
+      <div class="sidebar-promo">
+        <strong>Local client</strong>
+        <span style="opacity:0.9;font-size:0.8rem">Heartbeat must succeed before tools unlock.</span>
+      </div>
+    </aside>
+
+    <div class="main-area">
+      <header class="topbar">
+        <div class="search-wrap">
+          <input type="search" placeholder="Search in dashboard…" readonly style="cursor:default" aria-label="Search" />
+        </div>
+        <div class="topbar-right">
+          <button type="button" class="icon-btn" aria-label="Notifications"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></button>
+          <button type="button" class="btn btn-outline" id="btn-logout" style="padding:0.45rem 1rem;font-size:0.85rem">Sign out</button>
+          <div class="user-pill">
+            <div class="avatar" id="avatar-letter">C</div>
+            <div class="user-meta">
+              <div class="name">Client</div>
+              <div class="email" id="user-sub">localhost</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="content">
+        <div class="page-head">
+          <div>
+            <h1 id="page-title">Dashboard</h1>
+            <p class="sub" id="page-sub">Connection status and heartbeat log. Refreshes every 2 seconds.</p>
+          </div>
+          <a class="btn btn-outline" id="head-server-link" href="#" target="_blank" rel="noopener">Open server</a>
+        </div>
+
+        <section id="panel-overview" class="panel active" role="tabpanel">
+          <div class="metrics-grid">
+            <div class="metric-card featured">
+              <div class="metric-label">Gate</div>
+              <div class="metric-value" id="m-gate">—</div>
+              <div class="metric-hint" id="m-gate-hint">Subscription gate</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Interval</div>
+              <div class="metric-value" id="m-interval">—</div>
+              <div class="metric-hint">Between heartbeats</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Sent</div>
+              <div class="metric-value" id="m-sent">—</div>
+              <div class="metric-hint">Total attempts</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Local port</div>
+              <div class="metric-value" id="m-port">—</div>
+              <div class="metric-hint">This dashboard</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Connection</h2>
+            <div class="row" id="meta"></div>
+          </div>
+
+          <div class="card">
+            <h2>Last server response</h2>
+            <div id="last"></div>
+          </div>
+
+          <div class="card">
+            <h2>Recent sends</h2>
+            <div id="log"></div>
+          </div>
+        </section>
+
+        <section id="panel-utilities" class="panel" role="tabpanel" aria-hidden="true">
+          <div class="card">
+            <h2>Utilities</h2>
+            <p class="muted" style="margin:0 0 1rem">Developer tools. Add more modules here as the product grows.</p>
+
+            <h3>JSON viewer</h3>
+            <p class="muted" style="margin:0 0 0.5rem;font-size:0.85rem">Paste JSON — format or minify in the browser only.</p>
+            <textarea id="json-input" class="util-in" placeholder='{"example": true}'></textarea>
+            <div class="util-actions">
+              <button type="button" class="btn-util" id="json-format">Format</button>
+              <button type="button" class="btn-util secondary" id="json-minify">Minify</button>
+              <button type="button" class="btn-util secondary" id="json-clear">Clear</button>
+            </div>
+            <pre id="json-out" style="margin-top:0.75rem; min-height:2rem; display:none;background:#f8fafc"></pre>
+            <p id="json-err" class="bad" style="margin:0.5rem 0 0; display:none"></p>
+
+            <h3>External viewer</h3>
+            <p class="muted" style="margin:0 0 0.5rem;font-size:0.85rem">Sandboxed iframe preview. Many sites block embeds.</p>
+            <div class="row" style="align-items:center">
+              <input type="url" id="ext-url" class="url-in" placeholder="https://example.com" autocomplete="off" />
+              <button type="button" class="btn-util" id="ext-load">Load</button>
+              <button type="button" class="btn-util secondary" id="ext-tab">New tab</button>
+            </div>
+            <p class="hint">If the frame is blank, open in a new tab instead.</p>
+            <div class="iframe-wrap">
+              <iframe id="ext-frame" title="External preview" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer"></iframe>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    (function nav() {
+      var items = document.querySelectorAll('.sidebar .nav-item[data-panel]');
+      var panels = {
+        overview: document.getElementById('panel-overview'),
+        utilities: document.getElementById('panel-utilities')
+      };
+      function show(name) {
+        items.forEach(function (t) {
+          var on = t.getAttribute('data-panel') === name;
+          t.classList.toggle('active', on);
+          t.setAttribute('aria-selected', on ? 'true' : 'false');
+        });
+        Object.keys(panels).forEach(function (k) {
+          var on = k === name;
+          panels[k].classList.toggle('active', on);
+          panels[k].setAttribute('aria-hidden', on ? 'false' : 'true');
+        });
+        var title = document.getElementById('page-title');
+        var sub = document.getElementById('page-sub');
+        if (name === 'utilities') {
+          title.textContent = 'Utilities';
+          sub.textContent = 'JSON and external preview tools.';
+        } else {
+          title.textContent = 'Dashboard';
+          sub.textContent = 'Connection status and heartbeat log. Refreshes every 2 seconds.';
+        }
+      }
+      items.forEach(function (t) {
+        t.addEventListener('click', function () {
+          show(t.getAttribute('data-panel'));
+        });
+      });
+    })();
+
+    function serverBase(url) {
+      try { return new URL(url).origin; } catch (e) { return '#'; }
+    }
+    function escapeHtml(s) {
+      var el = document.createElement('div');
+      el.textContent = s;
+      return el.innerHTML;
+    }
+
+    async function loadOverview() {
+      var r = await fetch('/api/status');
+      var d = await r.json();
+      if (!d.dashboard_access) {
+        location.replace('/');
+        return;
+      }
+      var hb = d.heartbeat_url || '';
+      var origin = serverBase(hb);
+      document.getElementById('server-link').href = origin + '/';
+      document.getElementById('head-server-link').href = origin + '/';
+      document.getElementById('user-sub').textContent = d.user_email
+        ? d.user_email + ' · port ' + (d.dashboard_port || '—')
+        : 'port ' + (d.dashboard_port || '—');
+
+      var gate = (d.gate || '').toLowerCase();
+      document.getElementById('m-gate').textContent = gate || '—';
+      document.getElementById('m-gate-hint').textContent = d.last_ok ? 'Last ping OK' : 'Check log';
+      document.getElementById('m-interval').textContent = (d.interval_secs != null ? d.interval_secs + 's' : '—');
+      document.getElementById('m-sent').textContent = d.total_sent != null ? String(d.total_sent) : '—';
+      document.getElementById('m-port').textContent = d.dashboard_port != null ? String(d.dashboard_port) : '—';
+
+      var sid = d.session_id || '';
+      var sidShort = sid.length > 14 ? sid.slice(0, 8) + '…' + sid.slice(-6) : sid;
+      document.getElementById('meta').innerHTML =
+        '<div style="flex:1;min-width:200px"><span class="label">Heartbeat URL</span><br><code>' + escapeHtml(hb) + '</code></div>' +
+        '<div style="flex:1;min-width:200px"><span class="label">Signed in as</span><br><strong>' + escapeHtml(d.user_name || '—') + '</strong><br><span class="muted" style="font-size:0.8rem">' + escapeHtml(d.user_email || '') + '</span></div>' +
+        '<div style="flex:1;min-width:200px"><span class="label">Server session</span><br><code title="' + escapeHtml(sid) + '">' + escapeHtml(sidShort || '—') + '</code><br><span class="muted" style="font-size:0.78rem">Started ' + escapeHtml(d.session_started_at || '—') + '</span></div>' +
+        '<div style="flex:1;min-width:200px"><span class="label">Client ID</span><br><code>' + escapeHtml(d.client_id || '') + '</code></div>' +
+        '<div style="flex:1;min-width:200px"><span class="label">Device ID</span><br><code>' + escapeHtml(d.device_id || '') + '</code></div>' +
+        '<div><span class="label">App</span><br><code>' + escapeHtml(d.app_version || '') + '</code></div>';
+
+      var last = document.getElementById('last');
+      if (d.last_error) {
+        last.innerHTML = '<p class="bad">' + escapeHtml(d.last_error) + '</p>';
+      } else if (d.last_response != null) {
+        last.innerHTML = '<pre>' + escapeHtml(JSON.stringify(d.last_response, null, 2)) + '</pre>';
+      } else {
+        last.innerHTML = '<p class="muted">No response yet.</p>';
+      }
+
+      var log = document.getElementById('log');
+      if (!d.recent_log || !d.recent_log.length) {
+        log.innerHTML = '<p class="muted">No attempts yet.</p>';
+        return;
+      }
+      var rows = '<table class="data-table"><thead><tr><th>Time</th><th>Result</th><th>Detail</th></tr></thead><tbody>';
+      for (var i = 0; i < d.recent_log.length; i++) {
+        var e = d.recent_log[i];
+        var cls = e.ok ? 'ok' : 'bad';
+        rows += '<tr><td>' + escapeHtml(e.at) + '</td><td class="' + cls + '">' + (e.ok ? 'OK' : 'FAIL') + '</td><td>' + escapeHtml(e.detail) + '</td></tr>';
+      }
+      rows += '</tbody></table>';
+      log.innerHTML = rows;
+    }
+
+    document.getElementById('btn-logout').addEventListener('click', async function () {
+      if (!confirm('Sign out? Heartbeats will stop until you sign in again.')) return;
+      try {
+        await fetch('/api/logout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: '{}',
+        });
+      } catch (e) {}
+      location.replace('/');
+    });
+
+    loadOverview().catch(function () {});
+    setInterval(function () {
+      loadOverview().catch(function () {});
+    }, 2000);
+
+    (function jsonUtil() {
+      var input = document.getElementById('json-input');
+      var out = document.getElementById('json-out');
+      var err = document.getElementById('json-err');
+      function hideErr() { err.style.display = 'none'; err.textContent = ''; }
+      function showErr(msg) {
+        err.style.display = 'block';
+        err.textContent = msg;
+        out.style.display = 'none';
+      }
+      function run(minify) {
+        hideErr();
+        var raw = input.value.trim();
+        if (!raw) { out.style.display = 'none'; return; }
+        try {
+          var obj = JSON.parse(raw);
+          var text = minify ? JSON.stringify(obj) : JSON.stringify(obj, null, 2);
+          out.textContent = text;
+          out.style.display = 'block';
+        } catch (e) {
+          showErr('Invalid JSON: ' + (e && e.message ? e.message : String(e)));
+        }
+      }
+      document.getElementById('json-format').addEventListener('click', function () { run(false); });
+      document.getElementById('json-minify').addEventListener('click', function () { run(true); });
+      document.getElementById('json-clear').addEventListener('click', function () {
+        input.value = '';
+        out.style.display = 'none';
+        hideErr();
+      });
+    })();
+
+    (function extViewer() {
+      var urlEl = document.getElementById('ext-url');
+      var frame = document.getElementById('ext-frame');
+      function normalizeUrl(s) {
+        s = (s || '').trim();
+        if (!s) return '';
+        if (!/^https?:\/\//i.test(s)) return 'https://' + s;
+        return s;
+      }
+      document.getElementById('ext-load').addEventListener('click', function () {
+        var u = normalizeUrl(urlEl.value);
+        if (!u) { frame.removeAttribute('src'); return; }
+        frame.src = u;
+      });
+      document.getElementById('ext-tab').addEventListener('click', function () {
+        var u = normalizeUrl(urlEl.value);
+        if (u) window.open(u, '_blank', 'noopener,noreferrer');
+      });
+    })();
+  </script>
+</body>
+</html>

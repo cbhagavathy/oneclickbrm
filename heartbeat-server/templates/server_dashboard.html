@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard · Heartbeat server</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f0f6f7;
+      --surface: #ffffff;
+      --sidebar: #fafcfc;
+      --accent: #3a7582;
+      --accent-mid: #4d92a3;
+      --accent-soft: #e6f2f4;
+      --accent-dark: #264a52;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --danger: #b91c1c;
+      --warn: #ca8a04;
+      --radius: 16px;
+      --radius-sm: 12px;
+      --shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+      --shadow-lg: 0 10px 40px -10px rgba(58, 117, 130, 0.15);
+      font-family: "DM Sans", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); min-height: 100vh; }
+    .app { display: flex; min-height: 100vh; }
+    .sidebar {
+      width: 248px; flex-shrink: 0; background: var(--sidebar);
+      border-right: 1px solid var(--border); padding: 1.25rem 1rem;
+      display: flex; flex-direction: column;
+    }
+    .brand { display: flex; align-items: center; gap: 0.65rem; margin-bottom: 1.75rem; padding: 0 0.35rem; }
+    .brand-mark {
+      width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(145deg, var(--accent-mid), var(--accent));
+      box-shadow: var(--shadow-lg);
+    }
+    .brand-text { font-weight: 700; font-size: 1.05rem; letter-spacing: -0.02em; }
+    .nav-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 1rem 0.5rem 0.5rem; }
+    .nav-item {
+      display: flex; align-items: center; gap: 0.6rem; padding: 0.65rem 0.75rem; border-radius: var(--radius-sm);
+      color: var(--muted); text-decoration: none; font-size: 0.9rem; font-weight: 500; border: none; background: none; width: 100%; cursor: pointer; text-align: left;
+    }
+    .nav-item:hover { background: #fff; color: var(--text); }
+    .nav-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+    .nav-item svg { width: 20px; height: 20px; opacity: 0.85; }
+    .sidebar-promo {
+      margin-top: auto; padding: 1rem; background: linear-gradient(160deg, var(--accent-mid), #2d616d);
+      border-radius: var(--radius); color: #fff; font-size: 0.85rem;
+    }
+    .sidebar-promo strong { display: block; margin-bottom: 0.5rem; font-size: 0.95rem; }
+    .sidebar-promo .btn-mini { margin-top: 0.75rem; display: inline-block; background: #fff; color: var(--accent); padding: 0.45rem 0.9rem; border-radius: 10px; font-weight: 600; text-decoration: none; font-size: 0.8rem; }
+    .main-area { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      padding: 1rem 1.75rem; background: var(--surface); border-bottom: 1px solid var(--border);
+    }
+    .search-wrap {
+      flex: 1; max-width: 420px; position: relative;
+    }
+    .search-wrap input {
+      width: 100%; padding: 0.65rem 1rem 0.65rem 2.5rem; border: 1px solid var(--border); border-radius: 999px;
+      background: var(--bg); font-size: 0.9rem; outline: none;
+    }
+    .search-wrap input:focus { border-color: var(--accent-mid); }
+    .search-wrap::before {
+      content: ""; position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%);
+      width: 18px; height: 18px; border: 2px solid var(--muted); border-radius: 50%;
+      box-shadow: 4px 4px 0 -2px var(--bg), 6px 6px 0 -4px var(--muted);
+    }
+    .topbar-right { display: flex; align-items: center; gap: 1rem; }
+    .icon-btn { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); cursor: pointer; display: grid; place-items: center; }
+    .user-pill { display: flex; align-items: center; gap: 0.65rem; padding: 0.35rem 0.5rem 0.35rem 0.35rem; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: 0.85rem; display: grid; place-items: center; }
+    .user-meta { line-height: 1.2; }
+    .user-meta .name { font-size: 0.85rem; font-weight: 600; }
+    .user-meta .email { font-size: 0.7rem; color: var(--muted); }
+    .content { padding: 1.5rem 1.75rem 2.5rem; flex: 1; }
+    .page-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
+    .page-head h1 { margin: 0; font-size: 1.5rem; font-weight: 700; letter-spacing: -0.03em; }
+    .page-head .sub { margin: 0.35rem 0 0; color: var(--muted); font-size: 0.95rem; max-width: 520px; }
+    .page-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.55rem 1.1rem; border-radius: 999px; font-weight: 600; font-size: 0.875rem;
+      border: none; cursor: pointer; text-decoration: none; transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 4px 14px rgba(58, 117, 130, 0.35); }
+    .btn-primary:hover { filter: brightness(1.05); }
+    .btn-outline { background: #fff; color: var(--text); border: 1px solid var(--border); }
+    .btn-outline:hover { border-color: var(--accent-mid); color: var(--accent); }
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+    .metrics-grid {
+      display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; margin-bottom: 1.25rem;
+    }
+    @media (max-width: 1100px) { .metrics-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 600px) { .metrics-grid { grid-template-columns: 1fr; } .sidebar { display: none; } }
+    .metric-card {
+      background: var(--surface); border-radius: var(--radius); padding: 1.15rem 1.25rem; border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+    .metric-card.featured {
+      background: linear-gradient(135deg, var(--accent) 0%, #2d616d 100%); color: #fff; border: none;
+    }
+    .metric-card.featured .metric-label { color: rgba(255,255,255,0.85); }
+    .metric-card.featured .metric-value { color: #fff; }
+    .metric-label { font-size: 0.8rem; color: var(--muted); font-weight: 500; }
+    .metric-value { font-size: 1.75rem; font-weight: 700; margin-top: 0.25rem; letter-spacing: -0.02em; }
+    .metric-hint { font-size: 0.75rem; color: var(--muted); margin-top: 0.35rem; }
+    .metric-card.featured .metric-hint { color: rgba(255,255,255,0.75); }
+    .grid-2 {
+      display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 1rem; margin-bottom: 1.25rem;
+    }
+    @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+    .card {
+      background: var(--surface); border-radius: var(--radius); padding: 1.25rem; border: 1px solid var(--border); box-shadow: var(--shadow);
+    }
+    .card h2 { margin: 0 0 1rem; font-size: 1rem; font-weight: 600; }
+    .chart-bars { display: flex; align-items: flex-end; justify-content: space-between; gap: 0.5rem; height: 140px; padding-top: 0.5rem; }
+    .chart-bars .bar {
+      flex: 1; border-radius: 8px 8px 4px 4px; min-height: 8px;
+      background: linear-gradient(180deg, var(--accent-mid), var(--accent-soft));
+      opacity: 0.9;
+    }
+    .chart-bars .bar:nth-child(odd) { background: linear-gradient(180deg, #3a7582, #b8d4dc); }
+    .chart-bars .bar:nth-child(3n) { background: repeating-linear-gradient(-45deg, #cbd5e1, #cbd5e1 2px, #e2e8f0 2px, #e2e8f0 4px); }
+    .chart-labels { display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.7rem; color: var(--muted); font-weight: 600; }
+    .control-dark {
+      background: linear-gradient(165deg, var(--accent-dark) 0%, #2d616d 50%, var(--accent) 100%);
+      color: #fff; border-radius: var(--radius); padding: 1.35rem; position: relative; overflow: hidden;
+      box-shadow: var(--shadow-lg);
+    }
+    .control-dark::after {
+      content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 80% 20%, rgba(255,255,255,0.12), transparent 50%);
+      pointer-events: none;
+    }
+    .control-dark h3 { margin: 0 0 0.25rem; font-size: 1rem; position: relative; z-index: 1; }
+    .control-dark p { margin: 0 0 1rem; font-size: 0.8rem; opacity: 0.85; position: relative; z-index: 1; line-height: 1.4; }
+    .control-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; position: relative; z-index: 1; }
+    .control-actions .btn { border-radius: 12px; padding: 0.6rem 1.2rem; }
+    .control-actions .btn-start { background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.35); }
+    .control-actions .btn-start:hover { background: rgba(255,255,255,0.3); }
+    .control-actions .btn-stop { background: rgba(185, 28, 28, 0.9); color: #fff; }
+    .control-actions .btn-restart { background: #fff; color: var(--accent-dark); }
+    #control-msg { margin-top: 0.85rem; font-size: 0.8rem; position: relative; z-index: 1; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .data-table th { text-align: left; padding: 0.6rem 0.5rem; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--border); }
+    .data-table td { padding: 0.65rem 0.5rem; border-bottom: 1px solid var(--border); }
+    .data-table tr:last-child td { border-bottom: none; }
+    .pill { display: inline-block; padding: 0.2rem 0.55rem; border-radius: 999px; font-size: 0.72rem; font-weight: 600; }
+    .pill-ok { background: var(--accent-soft); color: var(--accent); }
+    .pill-bad { background: #fee2e2; color: var(--danger); }
+    .ok { color: var(--accent-mid); font-weight: 600; }
+    .err { color: var(--danger); }
+    .muted { color: var(--muted); font-size: 0.875rem; }
+    code { font-family: ui-monospace, monospace; font-size: 0.8rem; background: var(--bg); padding: 0.15rem 0.4rem; border-radius: 6px; }
+    #status-line { font-size: 0.8rem; color: var(--muted); margin-top: 0.5rem; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <span class="brand-text">OneClick BRM</span>
+      </div>
+      <div class="nav-label">Menu</div>
+      <a class="nav-item active" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Dashboard</a>
+      <button type="button" class="nav-item" id="nav-clients"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Clients</button>
+      <button type="button" class="nav-item" id="nav-recent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Heartbeats</button>
+      <a class="nav-item" href="/register"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>Register</a>
+      <a class="nav-item" href="/download/client"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download client</a>
+      <a class="nav-item" href="/health" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Health check</a>
+      <div class="nav-label">General</div>
+      <span class="nav-item" style="opacity:0.6;cursor:default"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</span>
+      <div class="sidebar-promo">
+        <strong>Heartbeat toolkit</strong>
+        <span style="opacity:0.9;font-size:0.8rem">Download the local client to test end-to-end.</span>
+        <a class="btn-mini" href="/download/client">Download</a>
+      </div>
+    </aside>
+
+    <div class="main-area">
+      <header class="topbar">
+        <div class="search-wrap">
+          <input type="search" placeholder="Search clients, devices…" aria-label="Search" readonly style="cursor:default" />
+        </div>
+        <div class="topbar-right">
+          <button type="button" class="icon-btn" aria-label="Messages" title="Messages"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></button>
+          <button type="button" class="icon-btn" aria-label="Notifications" title="Notifications"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></button>
+          <div class="user-pill">
+            <div class="avatar">HB</div>
+            <div class="user-meta">
+              <div class="name">Server admin</div>
+              <div class="email">localhost · heartbeat</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="content">
+        <div class="page-head">
+          <div>
+            <h1>Dashboard</h1>
+            <p class="sub">Monitor heartbeat clients, acknowledgements, and process control in one place. Data refreshes every 3 seconds.</p>
+            <p id="status-line" class="muted"></p>
+          </div>
+          <div class="page-actions">
+            <a class="btn btn-primary" href="/register">+ Register customer</a>
+            <a class="btn btn-outline" href="/download/client">Download client</a>
+            <a class="btn btn-outline" href="/health" target="_blank">Health check</a>
+          </div>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric-card featured">
+            <div class="metric-label">Total heartbeats</div>
+            <div class="metric-value" id="stat-total">—</div>
+            <div class="metric-hint" id="stat-total-hint">Since server start</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Unique clients</div>
+            <div class="metric-value" id="stat-clients">—</div>
+            <div class="metric-hint">By client ID</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Uptime</div>
+            <div class="metric-value" id="stat-uptime">—</div>
+            <div class="metric-hint">Server process</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Acknowledged</div>
+            <div class="metric-value" id="stat-ack">—</div>
+            <div class="metric-hint">Last batch coverage</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <h2>Heartbeat activity</h2>
+            <div class="chart-bars" id="chart-bars" aria-hidden="true"></div>
+            <div class="chart-labels"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+            <p class="muted" style="margin:0.75rem 0 0;font-size:0.8rem">Decorative 7-day strip · use Recent heartbeats for exact times.</p>
+          </div>
+          <div class="control-dark">
+            <h3>Server process</h3>
+            <p>Runs <code style="background:rgba(0,0,0,0.25);color:#fff;border:none">scripts/*.sh server</code> on the machine. <strong>Stop</strong> ends this web server — the browser cannot call <strong>Start</strong> anymore (nothing is listening). Start again from a terminal (see below).</p>
+            <div class="control-actions">
+              <button type="button" class="btn btn-start" id="ctl-start">Start</button>
+              <button type="button" class="btn btn-stop" id="ctl-stop">Stop</button>
+              <button type="button" class="btn btn-restart" id="ctl-restart">Restart</button>
+            </div>
+            <p id="control-msg" class="muted"></p>
+            <p style="font-size:0.72rem;opacity:0.88;margin:0.85rem 0 0;line-height:1.45;position:relative;z-index:1">
+              <strong>After Stop:</strong> run <code style="background:rgba(0,0,0,0.25);color:#fff;border:none;padding:0.1rem 0.35rem;border-radius:6px;font-size:0.7rem">./scripts/start.sh server</code> from the project root, or <code style="background:rgba(0,0,0,0.25);color:#fff;border:none;padding:0.1rem 0.35rem;border-radius:6px;font-size:0.7rem">cargo run -p heartbeat-server</code>, then refresh this page.
+            </p>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="card" id="section-clients">
+            <h2>Clients</h2>
+            <div id="clients-wrap"></div>
+          </div>
+          <div class="card" id="section-recent">
+            <h2>Recent heartbeats</h2>
+            <div id="table-wrap"></div>
+          </div>
+        </div>
+
+        <div class="card" id="section-sessions" style="margin-top:1rem">
+          <h2>Sessions</h2>
+          <p class="muted" style="margin:0 0 0.75rem;font-size:0.88rem">Login sessions stored on the server (email, client ID, IP, user agent). Updated on each heartbeat when the client sends <code>session_id</code>.</p>
+          <div id="sessions-wrap"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    function el(id) { return document.getElementById(id); }
+    function escapeHtml(s) {
+      const d = document.createElement('div');
+      d.textContent = s;
+      return d.innerHTML;
+    }
+    function formatUptime(sec) {
+      if (sec < 60) return sec + 's';
+      if (sec < 3600) return Math.floor(sec / 60) + 'm';
+      const h = Math.floor(sec / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      return h + 'h ' + m + 'm';
+    }
+    let serverReachable = true;
+    function buildChart(recent) {
+      const wrap = el('chart-bars');
+      wrap.innerHTML = '';
+      const n = 7;
+      for (let i = 0; i < n; i++) {
+        const b = document.createElement('div');
+        b.className = 'bar';
+        const slice = recent[i];
+        const h = slice ? 28 + (i * 9) % 72 : 12 + (i * 5) % 20;
+        b.style.height = Math.min(100, h) + '%';
+        wrap.appendChild(b);
+      }
+    }
+    async function load() {
+      const st = el('status-line');
+      const cw = el('clients-wrap');
+      const tw = el('table-wrap');
+      const sw = el('sessions-wrap');
+      try {
+        const r = await fetch('/api/stats');
+        if (!r.ok) throw new Error(r.status);
+        const d = await r.json();
+        serverReachable = true;
+        st.textContent = 'Live · Last update just now · ' + d.total_heartbeats + ' total events indexed.';
+
+        el('stat-total').textContent = d.total_heartbeats;
+        const nc = (d.clients && d.clients.length) ? d.clients.length : 0;
+        el('stat-clients').textContent = nc;
+        el('stat-uptime').textContent = formatUptime(d.uptime_secs);
+        const recent = d.recent || [];
+        const ackCount = recent.filter(function (e) { return e.acknowledged; }).length;
+        const ackPct = recent.length ? Math.round((ackCount / recent.length) * 100) : 100;
+        el('stat-ack').textContent = recent.length ? ackPct + '%' : '—';
+        buildChart(recent);
+
+        if (!d.clients || !d.clients.length) {
+          cw.innerHTML = '<p class="muted">No clients yet.</p>';
+        } else {
+          let cr = '<table class="data-table"><thead><tr><th>Client ID</th><th>Name</th><th>Last seen</th><th>Beats</th><th>Ack</th><th>Device</th><th>App</th></tr></thead><tbody>';
+          for (const c of d.clients) {
+            const ack = c.acknowledged
+              ? '<span class="pill pill-ok">ok</span>'
+              : '<span class="pill pill-bad">no</span>';
+            const dev = c.device_id != null && c.device_id !== '' ? c.device_id : '—';
+            cr += '<tr><td><code>' + escapeHtml(c.client_id || '—') + '</code></td><td>' + escapeHtml(c.client_name || '—') + '</td><td>' + escapeHtml(c.last_seen) + '</td><td>' + c.beats_count + '</td><td>' + ack + '</td><td><code>' + escapeHtml(dev) + '</code></td><td>' + escapeHtml(c.last_app_version || '—') + '</td></tr>';
+          }
+          cr += '</tbody></table>';
+          cw.innerHTML = cr;
+        }
+
+        if (!d.recent.length) {
+          tw.innerHTML = '<p class="muted">No heartbeats yet.</p>';
+        } else {
+          let rows = '<table class="data-table"><thead><tr><th>Time</th><th>Client ID</th><th>Name</th><th>Device</th><th>App</th><th>Ack</th><th>Detail</th></tr></thead><tbody>';
+          for (const e of d.recent) {
+            const ack = e.acknowledged
+              ? '<span class="ok">yes</span>'
+              : '<span class="err">no</span>';
+            const cid = e.client_id != null && e.client_id !== '' ? e.client_id : '—';
+            const cname = e.client_name != null && e.client_name !== '' ? e.client_name : '—';
+            rows += '<tr><td>' + escapeHtml(e.received_at) + '</td><td><code>' + escapeHtml(cid) + '</code></td><td>' + escapeHtml(cname) + '</td><td>' + escapeHtml(e.device_id || '—') + '</td><td>' + escapeHtml(e.app_version || '—') + '</td><td>' + ack + '</td><td class="muted">' + escapeHtml(e.ack_detail || '') + '</td></tr>';
+          }
+          rows += '</tbody></table>';
+          tw.innerHTML = rows;
+        }
+
+        const sessions = d.sessions || [];
+        if (!sessions.length) {
+          sw.innerHTML = '<p class="muted">No login sessions recorded yet.</p>';
+        } else {
+          let sr = '<table class="data-table"><thead><tr><th>Session ID</th><th>Email</th><th>Client ID</th><th>Kind</th><th>Last seen</th><th>Created</th><th>IP</th><th>User agent</th></tr></thead><tbody>';
+          for (const s of sessions) {
+            const sid = (s.id || '').length > 18 ? (s.id.slice(0, 10) + '…') : (s.id || '—');
+            const ua = (s.user_agent || '—').length > 48 ? (s.user_agent.slice(0, 45) + '…') : (s.user_agent || '—');
+            sr += '<tr><td><code title="' + escapeHtml(s.id || '') + '">' + escapeHtml(sid) + '</code></td><td>' + escapeHtml(s.email || '—') + '</td><td><code>' + escapeHtml(s.client_id || '—') + '</code></td><td>' + escapeHtml(s.client_kind || '—') + '</td><td>' + escapeHtml(s.last_seen_at || '—') + '</td><td>' + escapeHtml(s.created_at || '—') + '</td><td>' + escapeHtml(s.remote_ip || '—') + '</td><td class="muted" style="max-width:220px;word-break:break-all">' + escapeHtml(ua) + '</td></tr>';
+          }
+          sr += '</tbody></table>';
+          sw.innerHTML = sr;
+        }
+      } catch (e) {
+        serverReachable = false;
+        st.innerHTML = '<span class="err">Server offline or unreachable. Start it from a terminal (<code>./scripts/start.sh server</code>), then reload this page. · ' + escapeHtml(String(e)) + '</span>';
+      }
+    }
+    function controlFetchErrorMessage(err) {
+      const s = String(err && err.message !== undefined ? err.message : err);
+      if ((err && err.name === 'TypeError') || s.indexOf('Failed to fetch') !== -1 || s.indexOf('NetworkError') !== -1 || s.indexOf('Load failed') !== -1) {
+        return 'Nothing is listening on this address — the server is stopped. Open a terminal in the project folder and run ./scripts/start.sh server (or cargo run -p heartbeat-server), then refresh this page. The Start button only works while this dashboard can reach the server.';
+      }
+      return s;
+    }
+    async function control(action) {
+      const msg = el('control-msg');
+      msg.textContent = '';
+      msg.className = 'muted';
+      if (!serverReachable) {
+        msg.textContent = controlFetchErrorMessage(new TypeError('Failed to fetch'));
+        msg.style.color = '#fecaca';
+        return;
+      }
+      if (action === 'stop' || action === 'restart') {
+        const ok = confirm(
+          action === 'stop'
+            ? 'Stop the heartbeat server? This page will go offline — you will need to start the process from a terminal before Start works here again.'
+            : 'Restart the heartbeat server? This page may disconnect briefly.'
+        );
+        if (!ok) return;
+      }
+      try {
+        const r = await fetch('/api/control', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action }),
+        });
+        const d = await r.json().catch(function () { return {}; });
+        if (!r.ok) throw new Error(d.message || 'HTTP ' + r.status);
+        msg.textContent = d.message || 'OK';
+        msg.style.color = 'rgba(255,255,255,0.95)';
+      } catch (e) {
+        msg.textContent = controlFetchErrorMessage(e);
+        msg.style.color = '#fecaca';
+      }
+    }
+    el('ctl-start').addEventListener('click', function () { control('start'); });
+    el('ctl-stop').addEventListener('click', function () { control('stop'); });
+    el('ctl-restart').addEventListener('click', function () { control('restart'); });
+    el('nav-clients').addEventListener('click', function () {
+      el('section-clients').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    el('nav-recent').addEventListener('click', function () {
+      el('section-recent').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    load();
+    setInterval(load, 3000);
+  </script>
+</body>
+</html>
